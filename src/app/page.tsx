@@ -1,66 +1,53 @@
-'use client';
+"use client";
 
 import { useWallet } from "@solana/wallet-adapter-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { useEffect, useState } from "react";
-import { dlmmClient } from "@/lib/meteoraClient";
-
-interface Pool {
-  mintA: string;
-  mintB: string;
-  poolAddress: string;
-}
+import clientPromise from "@/lib/meteoraClient";
 
 export default function HomePage() {
   const { connected, publicKey } = useWallet();
-  const [pools, setPools] = useState<Pool[]>([]);
+  const [pools, setPools] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchPools = async () => {
       try {
-        const result = await dlmmClient.getAllPools();
-        const simplified = result.map((pool) => ({
-          mintA: pool.tokenAMint.toBase58(),
-          mintB: pool.tokenBMint.toBase58(),
-          poolAddress: pool.address.toBase58(),
-        }));
-        setPools(simplified);
+        const client = await clientPromise;
+        const allPools = await client.getAllPools();
+        setPools(allPools);
+        console.log("Fetched pools:", allPools);
       } catch (error) {
-        console.error("Failed to fetch pools:", error);
+        console.error("Error fetching pools:", error);
       }
     };
 
-    fetchPools();
-  }, []);
+    if (connected) {
+      fetchPools();
+    }
+  }, [connected]);
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-10">
-      <h1 className="text-3xl font-bold mb-6">DLMM Pools Viewer</h1>
+    <main className="flex min-h-screen flex-col items-center justify-center p-24">
+      <h1 className="text-3xl font-bold mb-6">DLMM UI</h1>
 
       <WalletMultiButton />
 
-      {connected && publicKey && (
-        <p className="text-green-600 mt-4">
-          ✅ Connected: {publicKey.toBase58()}
-        </p>
+      {connected && (
+        <div className="mt-6 text-green-600">
+          ✅ Connected: {publicKey?.toBase58()}
+          <div className="mt-4 text-sm text-white">
+            {pools.length > 0 ? (
+              <ul>
+                {pools.map((pool, i) => (
+                  <li key={i}>Pool ID: {pool.poolId.toString()}</li>
+                ))}
+              </ul>
+            ) : (
+              <p>Fetching pools...</p>
+            )}
+          </div>
+        </div>
       )}
-
-      <div className="mt-8 w-full max-w-2xl">
-        <h2 className="text-xl font-semibold mb-4">Pools:</h2>
-        {pools.length === 0 ? (
-          <p>Loading...</p>
-        ) : (
-          <ul className="space-y-4">
-            {pools.map((pool) => (
-              <li key={pool.poolAddress} className="border p-4 rounded">
-                <p><strong>Mint A:</strong> {pool.mintA}</p>
-                <p><strong>Mint B:</strong> {pool.mintB}</p>
-                <p><strong>Address:</strong> {pool.poolAddress}</p>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
     </main>
   );
 }
