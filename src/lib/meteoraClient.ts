@@ -1,10 +1,8 @@
 import { Connection } from "@solana/web3.js";
-import { createDLMMClient } from "@meteora-ag/dlmm";
+import { DLMMClient } from "@meteora-ag/dlmm";
 
 const RPC_ENDPOINT = "https://api.mainnet-beta.solana.com";
 const connection = new Connection(RPC_ENDPOINT);
+const client = new DLMMClient(connection);
 
-// DLMMClient is a factory, not a class — you must await it
-const clientPromise = createDLMMClient(connection);
-
-export default clientPromise;
+export default client;

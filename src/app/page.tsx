@@ -3,16 +3,16 @@
 import { useWallet } from "@solana/wallet-adapter-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { useEffect, useState } from "react";
-import clientPromise from "@/lib/meteoraClient";
+import client from "@/lib/meteoraClient";
 
 export default function HomePage() {
   const { connected, publicKey } = useWallet();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [pools, setPools] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchPools = async () => {
       try {
-        const client = await clientPromise;
         const allPools = await client.getAllPools();
         setPools(allPools);
         console.log("Fetched pools:", allPools);
