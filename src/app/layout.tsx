@@ -1,37 +1,31 @@
-'use client';
+"use client";
+import dynamic from "next/dynamic";
+import { useMemo } from "react";
+import { PhantomWalletAdapter } from "@solana/wallet-adapter-wallets";
+import {
+  ConnectionProvider,
+  WalletProvider,
+} from "@solana/wallet-adapter-react";
+import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 
-import './globals.css';
-import '@solana/wallet-adapter-react-ui/styles.css';
-import { Inter } from 'next/font/google';
-import { WalletProvider } from '@solana/wallet-adapter-react';
-import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
-import { PhantomWalletAdapter } from '@solana/wallet-adapter-phantom';
-import { useMemo } from 'react';
-import dynamic from 'next/dynamic';
+const WalletWrapper = dynamic(() =>
+  Promise.resolve(({ children }: { children: React.ReactNode }) => {
+    const wallets = useMemo(() => [new PhantomWalletAdapter()], []);
 
-const inter = Inter({ subsets: ['latin'] });
+    return (
+      <ConnectionProvider endpoint="https://api.mainnet-beta.solana.com">
+        <WalletProvider wallets={wallets} autoConnect>
+          <WalletModalProvider>{children}</WalletModalProvider>
+        </WalletProvider>
+      </ConnectionProvider>
+    );
+  })
+);
 
-// Prevent SSR issues by wrapping wallet logic dynamically
-const WalletWrapper = dynamic(() => Promise.resolve(({ children }) => {
-  const wallets = useMemo(() => [new PhantomWalletAdapter()], []);
-
-  return (
-    <WalletProvider wallets={wallets} autoConnect>
-      <WalletModalProvider>
-        {children}
-      </WalletModalProvider>
-    </WalletProvider>
-  );
-}), { ssr: false });
-
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="en">
-      <body className={inter.className}>
-        <WalletWrapper>
-          {children}
-        </WalletWrapper>
-      </body>
-    </html>
-  );
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return <WalletWrapper>{children}</WalletWrapper>;
 }
