@@ -1,6 +1,7 @@
 'use client';
 
 import './globals.css';
+import '@solana/wallet-adapter-react-ui/styles.css';
 import { Inter } from 'next/font/google';
 import { WalletProvider } from '@solana/wallet-adapter-react';
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
